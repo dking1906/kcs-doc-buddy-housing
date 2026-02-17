@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>DocBuddy Pro • Housing Defense</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    :root {
+      --bg: #0b0f14;
+      --panel: #111826;
+      --accent: #7aa2ff;
+      --text: #e6edf3;
+      --muted: #aab6c2;
+      --success: #3fb950;
+      --warning: #e5c07b;
+      --danger: #f7768e;
+      --border: #233044;
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    .app-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px 16px 100px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, #7aa2ff, #bb9af7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    h2 {
+      font-size: 1.6rem;
+      color: white;
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin: 20px 0 10px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(63,185,80,0.1);
+      color: var(--success);
+      padding: 6px 16px;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      border: 1px solid var(--success);
+    }
+    .city-pill {
+      display: inline-block;
+      background: rgba(122,162,255,0.1);
+      border: 1px solid var(--accent);
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-size: 1rem;
+      margin: 4px;
+      cursor: pointer;
+    }
+    .city-pill.active {
+      background: var(--accent);
+      color: #0b0f14;
+      font-weight: 700;
+    }
+    .stage-nav {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding: 8px 0 16px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stage-pill {
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 40px;
+      padding: 12px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text);
+    }
+    .stage-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0b0f14;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .urgent-banner {
+      background: rgba(247,118,142,0.15);
+      border-left: 6px solid var(--danger);
+      padding: 16px;
+      border-radius: 20px;
+      margin: 16px 0;
+      font-weight: 600;
+    }
+    button {
+      background: var(--accent);
+      color: #0b0f14;
+      border: none;
+      padding: 18px 24px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      width: 100%;
+      margin: 8px 0;
+      transition: all 0.2s;
+    }
+    button.secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text);
+    }
+    button.warning {
+      background: var(--warning);
+      color: #0b0f14;
+    }
+    button.danger {
+      background: var(--danger);
+      color: #0b0f14;
+    }
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .tool-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .tool-card h4 {
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin: 16px 0;
+      text-align: center;
+    }
+    .calendar-day {
+      background: #0a0e14;
+      padding: 12px 0;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .calendar-day.available {
+      background: rgba(63,185,80,0.2);
+      border-color: var(--success);
+      cursor: pointer;
+    }
+    .time-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .time-slot {
+      background: #0a0e14;
+      padding: 12px 20px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .appointment-card {
+      background: #0a0e14;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent);
+    }
+    .resource-list {
+      list-style: none;
+    }
+    .resource-list li {
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .footer-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px calc(12px + var(--safe-bottom));
+      display: flex;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .footer-nav button {
+      flex: 1;
+      margin: 0;
+      padding: 14px 0;
+      font-size: 1rem;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 16px 28px;
+      border-radius: 60px;
+      z-index: 9999;
+      display: none;
+    }
+    .hidden { display: none; }
+    .premium-tag {
+      background: var(--warning);
+      color: #0b0f14;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="app-container">
+
+  <!-- HEADER -->
+  <div style="text-align: center; margin-bottom: 16px;">
+    <h1>🏠 DOCBUDDY PRO</h1>
+    <h2 style="font-size: 1.4rem; color: var(--accent); margin-top: -8px;">HOUSING DEFENSE</h2>
+    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+      <span class="badge">⚡ EVICTION DEFENSE</span>
+      <span class="badge">📍 PHILADELPHIA + PEER CITIES</span>
+    </div>
+  </div>
+
+  <!-- URGENT BANNER -->
+  <div class="urgent-banner">
+    <strong>⏰ If you have a court date coming up, you need to prepare now. Missing court can result in automatic eviction.</strong>
+    <button class="danger" style="margin-top: 12px;" onclick="showToast('Loading emergency housing protocol...')">🚨 START EMERGENCY PROTOCOL</button>
+  </div>
+
+  <!-- HOUSING LIFECYCLE NAVIGATION -->
+  <div class="stage-nav" id="stageNav">
+    <div class="stage-pill stage-1 active" onclick="setStage(1)">1️⃣ Notice</div>
+    <div class="stage-pill stage-2" onclick="setStage(2)">2️⃣ Court</div>
+    <div class="stage-pill stage-3" onclick="setStage(3)">3️⃣ Denied</div>
+    <div class="stage-pill stage-4" onclick="setStage(4)">4️⃣ Tenant</div>
+    <div class="stage-pill stage-5" onclick="setStage(5)">5️⃣ Eviction</div>
+    <div class="stage-pill stage-6" onclick="setStage(6)">6️⃣ Recovery</div>
+  </div>
+
+  <!-- STAGE CONTENT -->
+  <div class="card" id="stageContent">
+    <h2 id="stageTitle">1️⃣ NOTICE RECEIVED</h2>
+    <p id="stageDescription">You got a notice from your landlord. Don't ignore it — but don't panic.</p>
+    
+    <div class="tool-grid" id="stageTools">
+      <div class="tool-card">
+        <h4>📋 Notice Decoder</h4>
+        <p>Understand what type of notice you received</p>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('decoder')">Open</button>
+      </div>
+      <div class="tool-card">
+        <h4>📝 Response Letter</h4>
+        <p>Draft a reply to your landlord</p>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('response')">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK TOOLS -->
+  <div class="card">
+    <h2>⚡ QUICK TOOLS</h2>
+    <div class="tool-grid">
+      <div class="tool-card">
+        <h4>📝 Eviction Answer</h4>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('answer')">Generate</button>
+      </div>
+      <div class="tool-card">
+        <h4>📋 Goodwill Letter</h4>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('goodwill')">Create</button>
+      </div>
+      <div class="tool-card">
+        <h4>🔧 Repair Request</h4>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('repair')">Generate</button>
+      </div>
+      <div class="tool-card">
+        <h4>📞 Landlord Scripts</h4>
+        <button class="secondary" style="padding: 10px;" onclick="openTool('script')">Get</button>
+      </div>
+      <div class="tool-card" style="background: rgba(229,192,123,0.1);">
+        <h4>⭐ Court-Ready Packet <span class="premium-tag">PREMIUM</span></h4>
+        <button style="padding: 10px; background: var(--warning);" onclick="window.open('https://dushawnking4.gumroad.com/l/qodPCKnVhmbme2ppfthT0g==', '_blank')">$47</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR + BOOKING -->
+  <div class="card">
+    <h2>📅 SCHEDULE COACHING</h2>
+    <p>Book time with a housing navigator.</p>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <button class="secondary" style="width: auto; padding: 8px 16px;" onclick="prevMonth()">←</button>
+      <span style="font-size: 1.3rem; font-weight: 600;" id="monthYear">February 2026</span>
+      <button class="secondary" style="width: auto; padding: 8px 16px;" onclick="nextMonth()">→</button>
+    </div>
+    
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div id="selectedDate" style="margin: 16px 0;">Select a date</div>
+    <div class="time-slots" id="timeSlots"></div>
+    <button id="bookButton" onclick="bookAppointment()" disabled>📅 Book Appointment</button>
+  </div>
+
+  <!-- LIVE CHAT -->
+  <div class="card">
+    <h2>💬 LIVE COACHING</h2>
+    <div style="background: #0a0e14; border-radius: 24px; padding: 20px; height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;" id="chatContainer">
+      <div style="background: var(--panel); padding: 12px 16px; border-radius: 20px; max-width: 80%; align-self: flex-start;">
+        👋 I'm your housing navigator. What's your situation?
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 12px;">
+      <input type="text" id="chatInput" placeholder="Type your question..." style="flex: 1; padding: 16px; border-radius: 40px; border: 2px solid var(--border); background: #0a0e14; color: white;" onkeypress="if(event.key==='Enter') sendMessage()">
+      <button class="secondary" style="width: auto; padding: 16px 24px;" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- LOCAL RESOURCES -->
+  <div class="card" id="resourcesCard">
+    <h2>📞 PHILADELPHIA RESOURCES</h2>
+    <ul class="resource-list">
+      <li><strong>⚖️ Community Legal Services</strong><br>215-981-3700 · Free eviction help</li>
+      <li><strong>🏘️ Tenant Union (TURN)</strong><br>267-443-2500 · Advice & referrals</li>
+      <li><strong>💰 ERAP (Rental Assistance)</strong><br>844-462-3727 · Apply now</li>
+      <li><strong>📋 Philadelphia Housing Authority</strong><br>215-684-4000 · Section 8, public housing</li>
+    </ul>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;">
+      <span class="city-pill active" onclick="switchCity('philadelphia')">📍 Philadelphia</span>
+      <span class="city-pill" onclick="switchCity('baltimore')">📍 Baltimore</span>
+      <span class="city-pill" onclick="switchCity('detroit')">📍 Detroit</span>
+      <span class="city-pill" onclick="switchCity('cleveland')">📍 Cleveland</span>
+    </div>
+  </div>
+
+  <!-- PREMIUM UPSELL -->
+  <div class="card" style="background: linear-gradient(145deg, #1a2330, #111826);">
+    <h2>🔓 UNLOCK ALL ACCESS</h2>
+    <p>Premium gives you:</p>
+    <ul style="margin-left: 20px; margin-bottom: 16px;">
+      <li>✅ Court-ready eviction defense packet</li>
+      <li>✅ Priority coach booking</li>
+      <li>✅ Full housing toolkit</li>
+      <li>✅ Unlimited priority chat</li>
+    </ul>
+    <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent); text-align: center;">$47</div>
+    <button onclick="window.open('https://dushawnking4.gumroad.com/l/qodPCKnVhmbme2ppfthT0g==', '_blank')">🚀 PURCHASE ON GUMROAD</button>
+  </div>
+
+</div>
+
+<!-- FOOTER NAV -->
+<div class="footer-nav">
+  <button class="secondary" onclick="showToast('Emergency: 211 or legal aid')">🆘 Emergency</button>
+  <button onclick="window.open('https://dushawnking4.gumroad.com/l/qodPCKnVhmbme2ppfthT0g==', '_blank')" style="background: var(--warning);">💰 Premium</button>
+  <button onclick="document.querySelector('.calendar-grid').scrollIntoView({behavior:'smooth'})">📅 Book</button>
+</div>
+
+<script>
+  // -------------------- STATE --------------------
+  let currentStage = 1;
+  let currentCity = 'philadelphia';
+  let currentDate = new Date(2026, 1, 15);
+  let selectedDate = null;
+  let selectedTime = null;
+  let appointments = [];
+
+  const stageData = {
+    1: {
+      title: "1️⃣ NOTICE RECEIVED",
+      desc: "You got a notice from your landlord. Don't ignore it — but don't panic.",
+      urgent: "Most notices have a 10-30 day deadline to respond.",
+      tools: [
+        { name: "📋 Notice Decoder", action: "decoder" },
+        { name: "📝 Response Letter", action: "response" },
+        { name: "⏱️ Deadline Calculator", action: "deadline" }
+      ]
+    },
+    2: {
+      title: "2️⃣ COURT DATE",
+      desc: "You have a court hearing coming up. Preparation is key.",
+      urgent: "Missing court = automatic eviction.",
+      tools: [
+        { name: "📝 Eviction Answer", action: "answer" },
+        { name: "📋 Court Checklist", action: "checklist" },
+        { name: "⚖️ What to Say", action: "script" }
+      ]
+    },
+    3: {
+      title: "3️⃣ DENIED HOUSING",
+      desc: "Your rental application was denied. You have options.",
+      urgent: "You may have rights under fair housing laws.",
+      tools: [
+        { name: "📝 Reconsideration Letter", action: "reconsider" },
+        { name: "📋 Goodwill Letter", action: "goodwill" },
+        { name: "⚖️ Fair Housing Complaint", action: "complaint" }
+      ]
+    },
+    4: {
+      title: "4️⃣ TENANT ISSUES",
+      desc: "Problems with your current landlord.",
+      urgent: "Document everything in writing.",
+      tools: [
+        { name: "🔧 Repair Request", action: "repair" },
+        { name: "📝 Rent Escrow Guide", action: "escrow" },
+        { name: "📋 Rights Summary", action: "rights" }
+      ]
+    },
+    5: {
+      title: "5️⃣ EVICTION PROCEEDING",
+      desc: "Active eviction case in court.",
+      urgent: "You need to respond and appear in court.",
+      tools: [
+        { name: "⚖️ Legal Aid Finder", action: "legalaid" },
+        { name: "📝 Emergency Defense", action: "emergency" },
+        { name: "📋 Post-Judgment Options", action: "post" }
+      ]
+    },
+    6: {
+      title: "6️⃣ AFTER EVICTION",
+      desc: "Moving forward after an eviction.",
+      urgent: "You may be able to seal your record.",
+      tools: [
+        { name: "🔒 Record Sealing Guide", action: "sealing" },
+        { name: "🏠 Rehousing Resources", action: "rehousing" },
+        { name: "📈 Credit Rebuilding", action: "credit" }
+      ]
+    }
+  };
+
+  const cityResources = {
+    philadelphia: {
+      name: "Philadelphia",
+      resources: [
+        { name: "Community Legal Services", phone: "215-981-3700", desc: "Free eviction help" },
+        { name: "Tenant Union (TURN)", phone: "267-443-2500", desc: "Advice & referrals" },
+        { name: "ERAP", phone: "844-462-3727", desc: "Rental assistance" },
+        { name: "Philadelphia Housing Authority", phone: "215-684-4000", desc: "Section 8, public housing" }
+      ]
+    },
+    baltimore: {
+      name: "Baltimore",
+      resources: [
+        { name: "Maryland Legal Aid", phone: "410-951-7777", desc: "Free eviction help" },
+        { name: "Baltimore Renters United", phone: "443-123-4567", desc: "Tenant organizing" },
+        { name: "ERAP Baltimore", phone: "443-388-5300", desc: "Rental assistance" },
+        { name: "HABC", phone: "410-396-3220", desc: "Housing authority" }
+      ]
+    },
+    detroit: {
+      name: "Detroit",
+      resources: [
+        { name: "Lakeshore Legal Aid", phone: "888-783-8190", desc: "Free eviction help" },
+        { name: "Detroit Eviction Defense", phone: "313-123-4567", desc: "Coalition" },
+        { name: "ERAP Detroit", phone: "866-313-2520", desc: "Rental assistance" },
+        { name: "Detroit Housing Commission", phone: "313-123-4567", desc: "Housing authority" }
+      ]
+    },
+    cleveland: {
+      name: "Cleveland",
+      resources: [
+        { name: "Legal Aid Society of Cleveland", phone: "216-687-1900", desc: "Free eviction help" },
+        { name: "Cleveland Tenants Organization", phone: "216-123-4567", desc: "Tenant rights" },
+        { name: "CHN Housing Partners", phone: "216-123-4567", desc: "Rental assistance" },
+        { name: "Cuyahoga Metropolitan Housing", phone: "216-123-4567", desc: "Housing authority" }
+      ]
+    }
+  };
+
+  const availableSlots = {
+    '2026-02-16': ['9:00 AM', '11:00 AM', '2:00 PM'],
+    '2026-02-17': ['10:00 AM', '1:00 PM', '3:00 PM'],
+    '2026-02-18': ['9:30 AM', '12:00 PM', '4:00 PM'],
+    '2026-02-19': ['11:30 AM', '2:30 PM'],
+    '2026-02-20': ['10:30 AM', '3:30 PM'],
+    '2026-02-23': ['9:00 AM', '1:00 PM', '4:30 PM'],
+    '2026-02-24': ['11:00 AM', '2:00 PM'],
+    '2026-02-25': ['10:00 AM', '3:00 PM'],
+  };
+
+  // -------------------- UI FUNCTIONS --------------------
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+  }
+
+  function setStage(stage) {
+    currentStage = stage;
+    
+    document.querySelectorAll('.stage-pill').forEach((pill, i) => {
+      if (i+1 === stage) pill.classList.add('active');
+      else pill.classList.remove('active');
+    });
+    
+    const data = stageData[stage];
+    document.getElementById('stageTitle').innerText = data.title;
+    document.getElementById('stageDescription').innerText = data.desc;
+    
+    let toolsHtml = '';
+    data.tools.forEach(tool => {
+      toolsHtml += `
+        <div class="tool-card">
+          <h4>${tool.name}</h4>
+          <button class="secondary" style="padding: 10px;" onclick="openTool('${tool.action}')">Open</button>
+        </div>
+      `;
+    });
+    document.getElementById('stageTools').innerHTML = toolsHtml;
+    
+    showToast(`Stage ${stage} loaded`);
+  }
+
+  function openTool(action) {
+    const actions = {
+      decoder: () => { showToast("Notice types: Pay or Quit (rent due), Cure or Quit (lease violation), Unconditional Quit (immediate eviction)"); },
+      response: () => { 
+        const name = prompt("Your full name:") || "Your Name";
+        console.log(`RESPONSE LETTER for ${name}\n\nI am responding to the notice dated [date]. I [agree/disagree] with the claims and request [more time/court hearing/mediation].`);
+        showToast("Response letter generated (see console)");
+      },
+      deadline: () => { showToast("Most notices give 10-30 days. Check your notice for exact deadline."); },
+      answer: () => { showToast("Eviction answer generated. File with the court before deadline."); },
+      checklist: () => { showToast("Court checklist: notice, lease, rent receipts, photos, witness list, ID, money order for filing fee."); },
+      script: () => { alert("⚖️ 'Your Honor, I ask for more time to [pay/respond/find counsel]. I have [children/disability/financial hardship].'"); },
+      reconsider: () => { showToast("Reconsideration letter generated. Explain why you're a good tenant despite credit."); },
+      goodwill: () => { showToast("Goodwill letter generated. Explain your situation honestly."); },
+      complaint: () => { showToast("Fair housing complaint: file with HUD or local fair housing agency."); },
+      repair: () => { showToast("Repair request generated. Send certified mail, keep copy."); },
+      escrow: () => { showToast("Rent escrow allows you to pay rent to court instead of landlord until repairs made."); },
+      rights: () => { showToast("Tenant rights: habitable housing, privacy, non-retaliation, repairs."); },
+      legalaid: () => { showToast("Legal aid: call 211 or local bar association."); },
+      emergency: () => { showToast("Emergency motion to stay eviction filed."); },
+      post: () => { showToast("Post-judgment options: appeal, pay to stay, negotiate move-out date."); },
+      sealing: () => { showToast("Eviction sealing possible in some cases — consult an attorney."); },
+      rehousing: () => { showToast("Rehousing resources: 211, homeless prevention programs, rapid re-housing."); },
+      credit: () => { showToast("Credit rebuilding: secured cards, rent reporting, dispute errors."); }
+    };
+    
+    if (actions[action]) actions[action]();
+    else showToast(`Opening ${action}...`);
+  }
+
+  // -------------------- CALENDAR --------------------
+  function renderCalendar() {
+    const monthYear = document.getElementById('monthYear');
+    const grid = document.getElementById('calendarGrid');
+    
+    const month = currentDate.toLocaleString('default', { month: 'long' });
+    const year = currentDate.getFullYear();
+    monthYear.innerText = `${month} ${year}`;
+    
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+    
+    let html = '';
+    ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(d => { html += `<div style="color: var(--muted);">${d}</div>`; });
+    
+    for (let i = 0; i < firstDay; i++) html += '<div></div>';
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isAvailable = availableSlots[dateStr];
+      
+      let classes = 'calendar-day';
+      if (isAvailable) classes += ' available';
+      
+      html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${d}</div>`;
+    }
+    
+    grid.innerHTML = html;
+  }
+
+  window.selectDate = function(dateStr) {
+    selectedDate = dateStr;
+    document.getElementById('selectedDate').innerText = `Selected: ${dateStr}`;
+    
+    const slots = availableSlots[dateStr] || [];
+    const slotsHtml = slots.map(time => 
+      `<div class="time-slot" onclick="selectTime('${time}')">${time}</div>`
+    ).join('');
+    
+    document.getElementById('timeSlots').innerHTML = slotsHtml || '<div>No slots available</div>';
+    document.getElementById('bookButton').disabled = true;
+    selectedTime = null;
+  };
+
+  window.selectTime = function(time) {
+    selectedTime = time;
+    document.getElementById('bookButton').disabled = false;
+    showToast(`Selected ${time}`);
+  };
+
+  window.bookAppointment = function() {
+    if (!selectedDate || !selectedTime) return;
+    
+    appointments.push({
+      date: selectedDate,
+      time: selectedTime,
+      stage: currentStage,
+      city: currentCity
+    });
+    
+    showToast(`✅ Booked for ${selectedDate} at ${selectedTime}`);
+    document.getElementById('bookButton').disabled = true;
+  };
+
+  window.prevMonth = function() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  };
+
+  window.nextMonth = function() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  };
+
+  // -------------------- CITY SWITCHING --------------------
+  window.switchCity = function(city) {
+    currentCity = city;
+    document.querySelectorAll('.city-pill').forEach(pill => {
+      pill.classList.remove('active');
+      if (pill.innerText.toLowerCase().includes(city)) {
+        pill.classList.add('active');
+      }
+    });
+    
+    const res = cityResources[city];
+    let html = `<h2>📞 ${res.name.toUpperCase()} RESOURCES</h2><ul class="resource-list">`;
+    res.resources.forEach(r => {
+      html += `<li><strong>${r.name}</strong><br>${r.phone} · ${r.desc}</li>`;
+    });
+    html += '</ul>';
+    document.getElementById('resourcesCard').innerHTML = html;
+    
+    showToast(`Switched to ${res.name}`);
+  };
+
+  // -------------------- CHAT --------------------
+  window.sendMessage = function() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    const chat = document.getElementById('chatContainer');
+    
+    const userDiv = document.createElement('div');
+    userDiv.style.background = 'var(--accent)';
+    userDiv.style.color = '#0b0f14';
+    userDiv.style.padding = '12px 16px';
+    userDiv.style.borderRadius = '20px';
+    userDiv.style.maxWidth = '80%';
+    userDiv.style.alignSelf = 'flex-end';
+    userDiv.innerText = msg;
+    chat.appendChild(userDiv);
+    
+    setTimeout(() => {
+      const navDiv = document.createElement('div');
+      navDiv.style.background = 'var(--panel)';
+      navDiv.style.padding = '12px 16px';
+      navDiv.style.borderRadius = '20px';
+      navDiv.style.maxWidth = '80%';
+      navDiv.style.alignSelf = 'flex-start';
+      navDiv.innerText = "Thanks. A housing navigator will respond soon.";
+      chat.appendChild(navDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }, 1000);
+    
+    input.value = '';
+    chat.scrollTop = chat.scrollHeight;
+  };
+
+  // -------------------- INIT --------------------
+  renderCalendar();
+  setStage(1);
+  window.showToast = showToast;
+  window.openTool = openTool;
+</script>
+
+</body>
+</html>
